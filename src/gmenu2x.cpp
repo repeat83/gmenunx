@@ -190,8 +190,9 @@ int16_t getUDCStatus(void) {
 
 int16_t tvOutPrev = false, tvOutConnected;
 bool getTVOutStatus() {
-	if (memdev > 0) return !(memregs[0x10300 >> 2] >> 25 & 0b1);
-	return false;
+	return true;
+	/*if (memdev > 0) return !(memregs[0x10300 >> 2] >> 25 & 0b1);
+	return false;*/
 }
 
 enum vol_mode_t {
@@ -237,15 +238,6 @@ int main(int /*argc*/, char * /*argv*/[]) {
 	app->main();
 
 	return 0;
-}
-
-bool exitMainThread = false;
-void* mainThread(void* param) {
-	GMenu2X *menu = (GMenu2X*)param;
-	while(!exitMainThread) {
-		sleep(1);
-	}
-	return NULL;
 }
 
 // GMenu2X *GMenu2X::instance = NULL;
@@ -334,8 +326,6 @@ GMenu2X::GMenu2X() {
 }
 
 void GMenu2X::main() {
-	pthread_t thread_id;
-
 	bool quit = false;
 	int i = 0, x = 0, y = 0, ix = 0, iy = 0;
 	uint32_t tickBattery = -4800, tickNow; //, tickMMC = 0; //, tickUSB = 0;
@@ -372,10 +362,6 @@ void GMenu2X::main() {
 			*iconManual = sc.skinRes("imgs/manual.png"),
 			*iconCPU = sc.skinRes("imgs/cpu.png"),
 			*iconMenu = sc.skinRes("imgs/menu.png");
-
-	if (pthread_create(&thread_id, NULL, mainThread, this)) {
-		ERROR("%s, failed to create main thread\n", __func__);
-	}
 
 #if defined(TARGET_RS97)
 	if (udcConnectedOnBoot == UDC_CONNECT) checkUDC();
@@ -598,9 +584,7 @@ void GMenu2X::main() {
 		// 	}
 		// }
 	}
-
-	exitMainThread = true;
-	pthread_join(thread_id, NULL);
+	
 	// delete btnContextMenu;
 	// btnContextMenu = NULL;
 }
@@ -611,7 +595,7 @@ bool GMenu2X::inputCommonActions(bool &inputAction) {
 	if (powerManager->suspendActive) {
 		// SUSPEND ACTIVE
 		input.setWakeUpInterval(0);
-		while (!input[POWER] || !input[CANCEL] || !input[CONFIRM]) {
+		while (!input[CONFIRM]) {
 			input.update();
 		}
 		powerManager->doSuspend(0);
@@ -1572,8 +1556,8 @@ void GMenu2X::hwCheck() {
 
 			if (tvOutConnected) {
 				MessageBox mb(this, tr["TV-out connected.\nContinue?"], "skin:icons/tv.png");
-				mb.setButton(SETTINGS, tr["Yes"]);
 				mb.setButton(CONFIRM,  tr["No"]);
+				mb.setButton(SETTINGS, tr["Yes"]);
 
 				if (mb.exec() == SETTINGS) {
 					TVOut = confStr["TVOut"];

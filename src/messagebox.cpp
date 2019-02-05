@@ -66,7 +66,11 @@ MessageBox::MessageBox(GMenu2X *gmenu2x, const string &text, const string &icon)
 	buttonLabels[SECTION_NEXT] = "r";
 	buttonLabels[PAGEUP] = "l";
 	buttonLabels[PAGEDOWN] = "r";
+#ifdef TARGET_ARCADEMINI
+	buttonLabels[SETTINGS] = "b";
+#else
 	buttonLabels[SETTINGS] = "start";
+#endif
 	buttonLabels[MENU] = "select";
 	buttonLabels[VOLUP] = "vol+";
 	buttonLabels[VOLDOWN] = "vol-";
