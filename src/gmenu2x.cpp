@@ -174,8 +174,12 @@ enum mmc_status {
 
 int16_t curMMCStatus, preMMCStatus;
 int16_t getMMCStatus(void) {
+#ifdef TARGET_GOPH
+return MMC_INSERT;
+#else
 	if (memdev > 0) return !(memregs[0x10500 >> 2] >> 0 & 0b1);
 	return MMC_ERROR;
+#endif
 }
 
 enum udc_status {
