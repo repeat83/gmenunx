@@ -175,7 +175,8 @@ enum mmc_status {
 int16_t curMMCStatus, preMMCStatus;
 int16_t getMMCStatus(void) {
 #ifdef TARGET_GOPH
-return MMC_INSERT;
+	if (memdev > 0) return !(memregs[0x10400 >> 2] >> 11 & 0b1);
+	return MMC_ERROR;
 #else
 	if (memdev > 0) return !(memregs[0x10500 >> 2] >> 0 & 0b1);
 	return MMC_ERROR;
@@ -188,8 +189,13 @@ enum udc_status {
 
 int udcConnectedOnBoot;
 int16_t getUDCStatus(void) {
+#ifdef TARGET_GOPH
+	if (memdev > 0) return (memregs[0x10000 >> 2] >> 6 & 0b1);
+	return UDC_ERROR;
+#else
 	if (memdev > 0) return (memregs[0x10300 >> 2] >> 7 & 0b1);
 	return UDC_ERROR;
+#endif
 }
 
 int16_t tvOutPrev = false, tvOutConnected;
